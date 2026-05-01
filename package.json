@@ -1,0 +1,11 @@
+{
+  "name": "mcp-server-demo",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "server.js",
+  "dependencies": {
+    "axios": "^1.15.2",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1"
+  }
+}
