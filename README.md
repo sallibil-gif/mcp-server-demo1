@@ -1,93 +1,375 @@
-# mcp-server-demo
+# 🚀 GitLab Pipeline MCP Server
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Node.js Version](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen)](https://nodejs.org/)
 
+A lightweight, secure, production-ready HTTP service that exposes GitLab REST API endpoints as MCP-style tools. Built with **Node.js + Express** for easy integration with AI agents, CLI tools, and automation scripts.
 
-## Getting started
+---
 
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
+## ✨ Key Features
 
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
+- 🔒 **Secure by default** — Environment variables, rate limiting, security headers
+- 🚀 **Production-ready** — Docker & Kubernetes support, health checks, graceful shutdown
+- 📦 **Easy deployment** — Docker Compose for local dev, ready for production
+- 🧪 **Well-tested** — GitHub Actions CI/CD pipeline
+- 📚 **Fully documented** — 4 comprehensive guides + troubleshooting
+- ⚡ **High performance** — Structured logging, optimized error handling
+- 🔄 **Extensible** — Add new GitLab endpoints in minutes
+- 🛡️ **OWASP compliant** — Security headers, input validation, proper error handling
 
-## Add your files
+---
 
-* [Create](https://docs.gitlab.com/user/project/repository/web_editor/#create-a-file) or [upload](https://docs.gitlab.com/user/project/repository/web_editor/#upload-a-file) files
-* [Add files using the command line](https://docs.gitlab.com/topics/git/add_files/#add-files-to-a-git-repository) or push an existing Git repository with the following command:
+## 📖 Quick Start
+
+### 🏃 30-Second Setup
+
+```bash
+# Clone & setup
+git clone https://github.com/sallibil-gif/mcp-server-demo1.git
+cd mcp-server-demo1
+cp .env.example .env
+
+# Edit .env with your GitLab Personal Access Token
+nano .env
+
+# Start with Docker Compose (recommended)
+docker-compose up -d
+
+# Or with npm
+npm install && npm start
+```
+
+**Test it:**
+```bash
+curl "http://localhost:3000/tools/get-pipelines?projectId=12345"
+```
+
+---
+
+## 🎯 Usage Examples
+
+### Get Project Pipelines
+
+```bash
+curl "http://localhost:3000/tools/get-pipelines?projectId=12345"
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "count": 5,
+  "pipelines": [
+    {
+      "id": 987,
+      "status": "success",
+      "ref": "main",
+      "created_at": "2026-05-12T10:30:00Z"
+    }
+  ]
+}
+```
+
+### Health Check
+
+```bash
+curl http://localhost:3000/health
+```
+
+### Readiness Check (K8s)
+
+```bash
+curl http://localhost:3000/ready
+```
+
+---
+
+## 🔧 Configuration
+
+### Environment Variables
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `GITLAB_BASE_URL` | — | GitLab API base URL (required) |
+| `GITLAB_TOKEN` | — | Personal Access Token (required) |
+| `PORT` | 3000 | Server port |
+| `NODE_ENV` | development | Environment mode |
+| `LOG_LEVEL` | info | Log verbosity (error, warn, info, debug) |
+| `RATE_LIMIT_WINDOW_MS` | 900000 | Rate limit window (15 min) |
+| `RATE_LIMIT_MAX_REQUESTS` | 100 | Max requests per window |
+
+### Getting a GitLab Personal Access Token
+
+1. Go to **https://gitlab.com/user/settings/personal_access_tokens**
+2. Click **Add new token**
+3. Set scopes to **`read_api`** (minimum required)
+4. Set expiration to **90 days** (for rotation)
+5. Copy token and add to `.env`: `GITLAB_TOKEN=glpat-xxx`
+
+⚠️ **Never commit `.env` or share tokens!**
+
+---
+
+## 🚀 Deployment Options
+
+### Local Development
+
+```bash
+# Start with auto-reload
+npm run dev
+
+# Or traditional start
+npm start
+```
+
+### Docker
+
+```bash
+# Build
+docker build -t mcp-gitlab-server .
+
+# Run
+docker run -p 3000:3000 --env-file .env mcp-gitlab-server
+```
+
+### Docker Compose (Recommended)
+
+```bash
+# Start (includes health checks, logging, resource limits)
+docker-compose up -d
+
+# View logs
+docker-compose logs -f
+
+# Stop
+docker-compose down
+```
+
+### Kubernetes
+
+```bash
+# Create secret
+kubectl create secret generic gitlab-creds \
+  --from-literal=GITLAB_TOKEN=glpat-xxx
+
+# Deploy (see SETUP.md for complete manifest)
+kubectl apply -f k8s/deployment.yaml
+kubectl apply -f k8s/service.yaml
+```
+
+---
+
+## 📚 Documentation
+
+| Document | Purpose |
+|----------|---------|
+| **[SETUP.md](docs/SETUP.md)** | Installation, Docker, Kubernetes, configuration |
+| **[SECURITY.md](docs/SECURITY.md)** | Security best practices, secrets, incident response |
+| **[TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md)** | Common issues, debugging, solutions |
+| **[gitlab-mcp-demo-overview.md](docs/gitlab-mcp-demo-overview.md)** | Architecture, workflow, design decisions |
+
+---
+
+## 🔒 Security
+
+✅ **Built-in security features:**
+- Environment-based secret management (no hardcoded tokens)
+- Rate limiting (configurable, default 100 req/15 min)
+- Security headers via Helmet.js (OWASP compliance)
+- Input validation on all endpoints
+- Structured logging (sensitive data never logged)
+- Non-root Docker container execution
+- Graceful error handling
+
+📖 **See [SECURITY.md](docs/SECURITY.md) for:**
+- Hardening guidelines
+- Secret rotation procedures
+- Incident response playbook
+- Production checklist
+
+---
+
+## 🛠️ Development
+
+### Install Dependencies
+
+```bash
+npm install
+```
+
+### Run Tests
+
+```bash
+npm test
+```
+
+### Lint & Format
+
+```bash
+npm run lint         # Check for issues
+npm run lint:fix     # Auto-fix issues
+npm run format       # Format code
+npm run format:check # Check formatting
+```
+
+### Watch Mode
+
+```bash
+npm run dev  # Auto-restart on file changes
+```
+
+### Security Audit
+
+```bash
+npm audit              # Check dependencies
+npm audit fix          # Fix vulnerabilities
+npm run audit:fix      # Alternative
+```
+
+---
+
+## 🔄 Extending with New Endpoints
+
+### Add GitLab API Function
+
+In `gitlab.js`:
+```javascript
+export async function fetchProjectIssues(projectId) {
+  const response = await axios.get(
+    `${process.env.GITLAB_BASE_URL}/projects/${projectId}/issues`,
+    { headers: { "PRIVATE-TOKEN": process.env.GITLAB_TOKEN } }
+  );
+  return response.data;
+}
+```
+
+### Add Express Route
+
+In `server.js`:
+```javascript
+app.get("/tools/get-issues", async (req, res) => {
+  try {
+    const { projectId } = req.query;
+    if (!projectId) {
+      return res.status(400).json({ success: false, error: "projectId required" });
+    }
+    const data = await fetchProjectIssues(projectId);
+    return res.json({ success: true, count: data.length, issues: data.slice(0, 10) });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ success: false, error: "Failed to fetch issues" });
+  }
+});
+```
+
+### Test It
+
+```bash
+curl "http://localhost:3000/tools/get-issues?projectId=12345"
+```
+
+See [SETUP.md](docs/SETUP.md) for more examples.
+
+---
+
+## 📊 Architecture
 
 ```
-cd existing_repo
-git remote add origin https://gitlab.com/sallibil/mcp-server-demo.git
-git branch -M main
-git push -uf origin main
+┌─────────────────┐
+│ Client/Agent    │
+└────────┬────────┘
+         │ HTTP Request
+         │ /tools/get-pipelines?projectId=12345
+         ▼
+┌─────────────────────────────────┐
+│ Express Server (server.js)      │ ◄── Rate Limiting
+│ ├─ Route Handler               │ ◄── Security Headers
+│ └─ Input Validation            │ ◄── Error Handling
+└────────┬────────────────────────┘
+         │ GitLab Function Call
+         ▼
+┌─────────────────────────────────┐
+│ gitlab.js                       │
+│ ├─ fetchPipelines()            │
+│ ├─ fetchProjectIssues()        │
+│ └─ ... (extend here)           │
+└────────┬────────────────────────┘
+         │ HTTP Request
+         │ GET /api/v4/projects/12345/pipelines
+         │ Header: PRIVATE-TOKEN: glpat-xxx
+         ▼
+┌─────────────────────────────────┐
+│ GitLab REST API v4              │
+│ (https://gitlab.com/api/v4)    │
+└─────────────────────────────────┘
 ```
 
-## Integrate with your tools
+---
 
-* [Set up project integrations](https://gitlab.com/sallibil/mcp-server-demo/-/settings/integrations)
+## 📈 Tech Stack
 
-## Collaborate with your team
+| Layer | Technology |
+|-------|------------|
+| **Runtime** | Node.js 20+ (ES modules) |
+| **Framework** | Express.js 5 |
+| **HTTP Client** | Axios |
+| **Configuration** | dotenv |
+| **Security** | Helmet.js, express-rate-limit |
+| **Container** | Docker, Docker Compose |
+| **Orchestration** | Kubernetes |
+| **CI/CD** | GitHub Actions |
 
-* [Invite team members and collaborators](https://docs.gitlab.com/user/project/members/)
-* [Create a new merge request](https://docs.gitlab.com/user/project/merge_requests/creating_merge_requests/)
-* [Automatically close issues from merge requests](https://docs.gitlab.com/user/project/issues/managing_issues/#closing-issues-automatically)
-* [Enable merge request approvals](https://docs.gitlab.com/user/project/merge_requests/approvals/)
-* [Set auto-merge](https://docs.gitlab.com/user/project/merge_requests/auto_merge/)
+---
 
-## Test and Deploy
+## 🐛 Troubleshooting
 
-Use the built-in continuous integration in GitLab.
+### Common Issues
 
-* [Get started with GitLab CI/CD](https://docs.gitlab.com/ci/quick_start/)
-* [Analyze your code for known vulnerabilities with Static Application Security Testing (SAST)](https://docs.gitlab.com/user/application_security/sast/)
-* [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/topics/autodevops/requirements/)
-* [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/user/clusters/agent/)
-* [Set up protected environments](https://docs.gitlab.com/ci/environments/protected_environments/)
+| Issue | Cause | Solution |
+|-------|-------|----------|
+| `401 Unauthorized` | Invalid/expired token | Generate new PAT, update `.env` |
+| `404 Not Found` | Wrong project ID format | Use numeric ID (e.g., `12345`) |
+| `Port 3000 in use` | Another process using port | Use `PORT=3001 npm start` |
+| `Module not found` | Dependencies not installed | Run `npm install` |
 
-***
+### Get Help
 
-# Editing this README
+- 📖 See [TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) for detailed solutions
+- 🐛 Open an [issue](https://github.com/sallibil-gif/mcp-server-demo1/issues)
+- 💬 Start a [discussion](https://github.com/sallibil-gif/mcp-server-demo1/discussions)
 
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thanks to [makeareadme.com](https://www.makeareadme.com/) for this template.
+---
 
-## Suggestions for a good README
+## 🤝 Contributing
 
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
+Contributions are welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
-## Name
-Choose a self-explaining name for your project.
+### Steps
 
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
+1. Fork the repository
+2. Create a feature branch: `git checkout -b feature/my-feature`
+3. Make changes and test: `npm run lint && npm test`
+4. Commit with conventional messages: `git commit -am "feat: Add my feature"`
+5. Push and create a PR
 
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
+---
 
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
+## 📄 License
 
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
+MIT © 2026 [sallibil-gif](https://github.com/sallibil-gif)
 
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
+See [LICENSE](LICENSE) for details.
 
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
+---
 
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
+## 🆘 Support & Resources
 
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
+- 📖 **Full Documentation**: [SETUP.md](docs/SETUP.md), [SECURITY.md](docs/SECURITY.md)
+- 🐛 **Issues**: [GitHub Issues](https://github.com/sallibil-gif/mcp-server-demo1/issues)
+- 💬 **Discussions**: [GitHub Discussions](https://github.com/sallibil-gif/mcp-server-demo1/discussions)
+- 🔗 **GitLab API**: [docs.gitlab.com](https://docs.gitlab.com/ee/api/)
 
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
+---
 
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
-
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
-
-## License
-For open source projects, say how it is licensed.
-
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+**Built with ❤️ for developers and AI agents**
