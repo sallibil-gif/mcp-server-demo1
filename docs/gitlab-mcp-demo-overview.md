@@ -1,4 +1,4 @@
-# GitLab pipeline MCP-style HTTP service — team overview
+# GitLab pipeline MCP-demo HTTP service — team overview
 
 ## 1. Executive summary
 
