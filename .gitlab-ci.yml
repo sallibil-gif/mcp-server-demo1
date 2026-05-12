@@ -1,19 +1,69 @@
-# You can override the included template(s) by including variable overrides
-# SAST customization: https://docs.gitlab.com/user/application_security/sast/#available-cicd-variables
-# Secret Detection customization: https://docs.gitlab.com/user/application_security/secret_detection/pipeline/configure/
-# Dependency Scanning customization: https://docs.gitlab.com/user/application_security/dependency_scanning/dependency_scanning_sbom/#customizing-analyzer-behavior
-# Container Scanning customization: https://docs.gitlab.com/user/application_security/container_scanning/#customizing-analyzer-behavior
-# Note that environment variables can be set in several places
-# See https://docs.gitlab.com/ci/variables/#cicd-variable-precedence
+# Spring PetClinic–style pipeline: build → test → security → package → deploy
+# SAST: https://docs.gitlab.com/user/application_security/sast/
+# Secret Detection: https://docs.gitlab.com/user/application_security/secret_detection/
+
 stages:
-- test
-- secret-detection
+  - build
+  - test
+  - secret-detection
+  - package
+  - deploy
+
+variables:
+  MAVEN_CLI_OPTS: "-Dhttp.keepAlive=false -Dmaven.wagon.http.pool=false"
+  SECRET_DETECTION_ENABLED: "true"
+
+include:
+  - template: Security/SAST.gitlab-ci.yml
+  - template: Security/Secret-Detection.gitlab-ci.yml
+
+.maven_cache: &maven_cache
+  cache:
+    key: ${CI_COMMIT_REF_SLUG}-maven
+    paths:
+      - .m2/repository
+
+build-job:
+  stage: build
+  image: maven:3.9-eclipse-temurin-17
+  <<: *maven_cache
+  script:
+    - mvn $MAVEN_CLI_OPTS -B -DskipTests compile
+
+unit-tests:
+  stage: test
+  image: maven:3.9-eclipse-temurin-17
+  <<: *maven_cache
+  script:
+    - mvn $MAVEN_CLI_OPTS -B verify
+  artifacts:
+    when: always
+    reports:
+      junit:
+        - target/surefire-reports/TEST-*.xml
+
 sast:
   stage: test
-include:
-- template: Security/SAST.gitlab-ci.yml
-- template: Security/Secret-Detection.gitlab-ci.yml
-variables:
-  SECRET_DETECTION_ENABLED: 'true'
+
 secret_detection:
   stage: secret-detection
+
+package-jar:
+  stage: package
+  image: maven:3.9-eclipse-temurin-17
+  <<: *maven_cache
+  script:
+    - mvn $MAVEN_CLI_OPTS -B -DskipTests package
+  artifacts:
+    paths:
+      - target/*.jar
+    expire_in: 1 week
+
+deploy-staging:
+  stage: deploy
+  image: alpine:latest
+  script:
+    - echo "Replace with deploy (Docker push, Helm, kubectl, etc.)"
+  when: manual
+  environment:
+    name: staging
