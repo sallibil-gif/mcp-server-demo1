@@ -1,0 +1,47 @@
+version: "3.8"
+
+services:
+  mcp-gitlab-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: mcp-gitlab-server
+    ports:
+      - "${PORT:-3000}:3000"
+    environment:
+      NODE_ENV: production
+      GITLAB_BASE_URL: ${GITLAB_BASE_URL}
+      GITLAB_TOKEN: ${GITLAB_TOKEN}
+      PORT: 3000
+      LOG_LEVEL: info
+      RATE_LIMIT_WINDOW_MS: 900000
+      RATE_LIMIT_MAX_REQUESTS: 100
+    env_file:
+      - .env
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5s
+    networks:
+      - mcp-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    # Resource limits (adjust as needed)
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
+          memory: 512M
+        reservations:
+          cpus: "0.5"
+          memory: 256M
+
+networks:
+  mcp-network:
+    driver: bridge
